@@ -24,19 +24,38 @@ SwitchMatrix<num_rows, num_cols> *_matrix_input = nullptr;
 
 DiodeDirection diode_direction = DiodeDirection::ROW2COL;
 
+// Origin offsets for stick calibration.
+int8_t x_offset = 0;
+int8_t y_offset = 0;
+
+// Analog stick coordinates, written by core1, read by core0.
+volatile Coords _coords;
+
 void setup() {
     _matrix_input =
         new SwitchMatrix<num_rows, num_cols>(row_pins, col_pins, matrix, diode_direction);
 
+    // Read button holds on plugin.
     _matrix_input->Scan([](uint8_t keycode, bool pressed) {
         // Serial.printf("Setting %d to %d\n", keycode, pressed);
         _keyboard->setPressed(keycode, pressed);
     });
+
+    // Hold Escape on plugin to enter BOOTSEL mode.
     if (_keyboard->isPressed(HID_KEY_ESCAPE)) {
         reset_usb_boot(0, 0);
     }
 
+    // Hold 1 on plugin for arrow key joystick mode.
+    if (_keyboard->isPressed(HID_KEY_1)) {
+        // TODO: Implement arrow key mode
+    }
+
     analogReadResolution(8);
+
+    // Calibrate stick centre values.
+    x_offset = 128 - analogRead(X_PIN);
+    y_offset = 128 - analogRead(Y_PIN);
 
     Serial.begin(115200);
 
@@ -65,7 +84,9 @@ void loop() {
         tight_loop_contents();
     }
 
-    /* Keyboard stuff */
+    /*
+     * Keyboard stuff
+     */
     _matrix_input->Scan([](uint8_t keycode, bool pressed) {
         _keyboard->setPressed(keycode, pressed);
     });
@@ -76,21 +97,25 @@ void loop() {
         tight_loop_contents();
     }
 
-    /* Joystick stuff */
-    uint8_t x = analogRead(X_PIN);
-    uint8_t y = analogRead(Y_PIN);
+    /*
+     * Joystick stuff
+     */
 
-    Coords filtered = filter_coords((Coords){ x, y });
+    // Read
+    uint8_t x = analogRead(X_PIN) + x_offset;
+    uint8_t y = analogRead(Y_PIN) + y_offset;
 
-    uint8_t mapped_x = 255 - map(filtered.x, 45, 195, 0, 255);
-    uint8_t mapped_y = 255 - map(filtered.y, 45, 195, 0, 255);
-    _gamepad->leftXAxis(mapped_x);
-    _gamepad->leftYAxis(mapped_y);
+    // Convert analog values to signed integers, pass them through configured filters, and convert
+    // them back to unsigned.
+    Coords filtered = filter_coords({ (int8_t)(x - 128), (int8_t)(y - 128) });
+
+    _gamepad->leftXAxis(127 - filtered.x);
+    _gamepad->leftYAxis(127 - filtered.y);
 
     _gamepad->sendState();
 
     // if (counter++ == 200) {
-    //     Serial.printf("X Raw: %u, Y Raw: %u X: %d, Y: %d\n", x, y, mapped_x, mapped_y);
+    //     Serial.printf("X Raw: %u, Y Raw: %u X: %d, Y: %d\n", x, y, filtered.x, filtered.y);
     //     counter = 0;
     // }
 }
