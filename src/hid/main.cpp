@@ -51,12 +51,6 @@ void setup() {
         // TODO: Implement arrow key mode
     }
 
-    analogReadResolution(8);
-
-    // Calibrate stick centre values.
-    x_offset = 128 - analogRead(X_PIN);
-    y_offset = 128 - analogRead(Y_PIN);
-
     Serial.begin(115200);
 
     // TinyUSBDevice.setManufacturerDescriptor("Sony Corp.");
@@ -100,18 +94,8 @@ void loop() {
     /*
      * Joystick stuff
      */
-
-    // Read
-    uint8_t x = analogRead(X_PIN) + x_offset;
-    uint8_t y = analogRead(Y_PIN) + y_offset;
-
-    // Convert analog values to signed integers, pass them through configured filters, and convert
-    // them back to unsigned.
-    Coords filtered = filter_coords({ (int8_t)(x - 128), (int8_t)(y - 128) });
-
-    _gamepad->leftXAxis(127 - filtered.x);
-    _gamepad->leftYAxis(127 - filtered.y);
-
+    _gamepad->leftXAxis(127 - _coords.x);
+    _gamepad->leftYAxis(127 - _coords.y);
     _gamepad->sendState();
 
     // if (counter++ == 200) {
@@ -120,16 +104,19 @@ void loop() {
     // }
 }
 
-/*
 void setup1() {
     analogReadResolution(8);
 
-    _matrix_input =
-        new SwitchMatrix<num_rows, num_cols>(row_pins, col_pins, matrix, diode_direction);
+    // Calibrate stick centre values.
+    x_offset = 128 - analogRead(X_PIN);
+    y_offset = 128 - analogRead(Y_PIN);
 
-    while (_gamepad == nullptr || _keyboard == nullptr) {
-        tight_loop_contents();
-    }
+    // _matrix_input =
+    //     new SwitchMatrix<num_rows, num_cols>(row_pins, col_pins, matrix, diode_direction);
+
+    // while (_gamepad == nullptr || _keyboard == nullptr) {
+    //     tight_loop_contents();
+    // }
 
     // _matrix_input->Scan([](uint8_t keycode, bool pressed) {
     //     _keyboard->setPressed(keycode, pressed);
@@ -144,18 +131,12 @@ void loop1() {
     //     _keyboard->setPressed(keycode, pressed);
     // });
 
-    uint8_t x = analogRead(X_PIN);
-    uint8_t y = analogRead(Y_PIN);
+    // Read analog stick values.
+    uint8_t x = analogRead(X_PIN) + x_offset;
+    uint8_t y = analogRead(Y_PIN) + y_offset;
 
-    Coords filtered = filter_coords((Coords){ x, y });
-
-    // uint8_t mapped_x = 127 - x;
-    // uint8_t mapped_y = y;
-    uint8_t mapped_x = 255 - map(filtered.x, 45, 195, 0, 255);
-    uint8_t mapped_y = 255 - map(filtered.y, 45, 195, 0, 255);
-    _gamepad->leftXAxis(mapped_x);
-    _gamepad->leftYAxis(mapped_y);
-
-    // delay(5);
+    // Convert analog values to signed integers and pass them through configured filters.
+    Coords filtered = filter_coords({ (int8_t)(x - 128), (int8_t)(y - 128) });
+    _coords.x = filtered.x;
+    _coords.y = filtered.y;
 }
-*/
