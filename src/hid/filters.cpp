@@ -4,7 +4,8 @@ Coords filter_coords(Coords coords) {
     // return coords;
     // return snap_angles(coords);
     // return scale_up(coords, 1.8);
-    return scale_up(snap_angles(coords), 1.8);
+    // return scale_up(snap_angles(coords), 1.8);
+    return snap_angles(scale_up(coords, 1.8));
 }
 
 int8_t scale_up_single(int8_t coord, float multiplier) {
@@ -47,23 +48,23 @@ Coords snap_angles(Coords coords) {
     //     magnitude,
     //     y_sign
     // );
-    if (magnitude < 50) {
+    if (magnitude < 90) {
         return coords;
     }
     if (y_sign >= 0) {
         if (30 <= angle && angle <= 65) {
             // 60 degree forward diagonal.
-            return Coords{ (int8_t)(61 * x_sign), (int8_t)35 };
+            return Coords{ (int8_t)(109 * x_sign), 64 };
         }
         if (65 <= angle && angle <= 90) {
             // 76 degree strafe angle.
-            return Coords{ (int8_t)(68 * x_sign), 17 };
+            return Coords{ (int8_t)(123 * x_sign), 32 };
         }
     }
     if (y_sign <= 0) {
         if (80 <= angle && angle <= 90) {
             // 76 degree strafe angle.
-            return Coords{ (int8_t)(68 * x_sign), 17 };
+            return Coords{ (int8_t)(123 * x_sign), 32 };
         }
     }
     return coords;
