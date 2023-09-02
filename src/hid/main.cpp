@@ -35,6 +35,9 @@ void setup() {
     _matrix_input =
         new SwitchMatrix<num_rows, num_cols>(row_pins, col_pins, matrix, diode_direction);
 
+    _keyboard = new TUKeyboard();
+    _keyboard->releaseAll();
+
     // Read button holds on plugin.
     _matrix_input->Scan([](uint8_t keycode, bool pressed) {
         // Serial.printf("Setting %d to %d\n", keycode, pressed);
@@ -53,17 +56,16 @@ void setup() {
 
     Serial.begin(115200);
 
-    // TinyUSBDevice.setManufacturerDescriptor("Sony Corp.");
-    // TinyUSBDevice.setProductDescriptor("DualShock 4 [CUH-ZCT2x]");
-    // TinyUSBDevice.setSerialDescriptor("1.0");
-    // TinyUSBDevice.setID(0x054C, 0x09CC);
+    TinyUSBDevice.setManufacturerDescriptor("Sony Corp.");
+    TinyUSBDevice.setProductDescriptor("DualShock 4 [CUH-ZCT1x]");
+    TinyUSBDevice.setSerialDescriptor("1.0");
+    TinyUSBDevice.setID(0x054C, 0x05C4);
 
     TUGamepad::registerDescriptor();
     TUKeyboard::registerDescriptor();
 
     _gamepad = new TUGamepad();
     _gamepad->begin();
-    _keyboard = new TUKeyboard();
     _keyboard->begin();
 
     while (!USBDevice.mounted()) {
@@ -110,27 +112,9 @@ void setup1() {
     // Calibrate stick centre values.
     x_offset = 128 - analogRead(X_PIN);
     y_offset = 128 - analogRead(Y_PIN);
-
-    // _matrix_input =
-    //     new SwitchMatrix<num_rows, num_cols>(row_pins, col_pins, matrix, diode_direction);
-
-    // while (_gamepad == nullptr || _keyboard == nullptr) {
-    //     tight_loop_contents();
-    // }
-
-    // _matrix_input->Scan([](uint8_t keycode, bool pressed) {
-    //     _keyboard->setPressed(keycode, pressed);
-    // });
-    // if (_keyboard->isPressed(HID_KEY_ESCAPE)) {
-    //     reset_usb_boot(0, 0);
-    // }
 }
 
 void loop1() {
-    // _matrix_input->Scan([](uint8_t keycode, bool pressed) {
-    //     _keyboard->setPressed(keycode, pressed);
-    // });
-
     // Read analog stick values.
     uint8_t x = analogRead(X_PIN) + x_offset;
     uint8_t y = analogRead(Y_PIN) + y_offset;
