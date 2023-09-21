@@ -58,13 +58,13 @@ Coords snap_angles(Coords coords) {
         }
         if (65 <= angle && angle <= 90) {
             // 76 degree strafe angle.
-            return Coords{ (int8_t)(123 * x_sign), 32 };
+            return Coords{ (int8_t)(123 * x_sign), 33 };
         }
     }
     if (y_sign <= 0) {
         if (80 <= angle && angle <= 90) {
             // 76 degree strafe angle.
-            return Coords{ (int8_t)(123 * x_sign), 32 };
+            return Coords{ (int8_t)(123 * x_sign), 33 };
         }
     }
     return coords;
