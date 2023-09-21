@@ -56,10 +56,10 @@ void setup() {
 
     Serial.begin(115200);
 
-    TinyUSBDevice.setManufacturerDescriptor("Sony Corp.");
-    TinyUSBDevice.setProductDescriptor("DualShock 4 [CUH-ZCT1x]");
-    TinyUSBDevice.setSerialDescriptor("1.0");
-    TinyUSBDevice.setID(0x054C, 0x05C4);
+    TinyUSBDevice.setManufacturerDescriptor("Sherbet");
+    TinyUSBDevice.setProductDescriptor("Gaming Keypad");
+    // TinyUSBDevice.setSerialDescriptor("1.0");
+    TinyUSBDevice.setID(0x054C, 0x09CC);
 
     TUGamepad::registerDescriptor();
     TUKeyboard::registerDescriptor();
@@ -76,26 +76,23 @@ void setup() {
 uint8_t counter = 0;
 
 void loop() {
-    while (!TUCompositeHID::_usb_hid.ready()) {
-        tight_loop_contents();
-    }
-
     /*
      * Keyboard stuff
      */
-    _matrix_input->Scan([](uint8_t keycode, bool pressed) {
-        _keyboard->setPressed(keycode, pressed);
-    });
-
-    _keyboard->sendState();
-
     while (!TUCompositeHID::_usb_hid.ready()) {
         tight_loop_contents();
     }
+    _matrix_input->Scan([](uint8_t keycode, bool pressed) {
+        _keyboard->setPressed(keycode, pressed);
+    });
+    _keyboard->sendState();
 
     /*
      * Joystick stuff
      */
+    while (!_gamepad->ready()) {
+        tight_loop_contents();
+    }
     _gamepad->leftXAxis(127 - _coords.x);
     _gamepad->leftYAxis(127 - _coords.y);
     _gamepad->sendState();
