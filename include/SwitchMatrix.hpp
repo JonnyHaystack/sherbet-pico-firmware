@@ -1,8 +1,8 @@
 #ifndef _SWITCHMATRIX_HPP
 #define _SWITCHMATRIX_HPP
 
-#include <Arduino.h>
 #include <Adafruit_TinyUSB.h>
+#include <Arduino.h>
 
 #define NA HID_KEY_NONE
 
@@ -18,10 +18,10 @@ template <size_t num_rows, size_t num_cols> class SwitchMatrix {
     SwitchMatrix(
         uint row_pins[num_rows],
         uint col_pins[num_cols],
-        uint8_t (&matrix)[num_rows][num_cols],
+        uint8_t (&keymap)[num_rows][num_cols],
         DiodeDirection direction
     )
-        : _matrix(matrix) {
+        : _keymap(keymap) {
         _direction = direction;
 
         if (_direction == DiodeDirection::ROW2COL) {
@@ -38,19 +38,11 @@ template <size_t num_rows, size_t num_cols> class SwitchMatrix {
 
         // Initialize output pins.
         for (size_t i = 0; i < _num_outputs; i++) {
-            // gpio::init_pin(_output_pins[i], gpio::GpioMode::GPIO_INPUT_PULLUP);
-            // gpio_init(_output_pins[i]);
-            // gpio_set_dir(_output_pins[i], GPIO_IN);
-            // gpio_pull_up(_output_pins[i]);
             pinMode(_output_pins[i], INPUT_PULLUP);
         }
 
         // Initialize input pins.
         for (size_t i = 0; i < _num_inputs; i++) {
-            // gpio::init_pin(_input_pins[i], gpio::GpioMode::GPIO_INPUT_PULLUP);
-            // gpio_init(_input_pins[i]);
-            // gpio_set_dir(_input_pins[i], GPIO_IN);
-            // gpio_pull_up(_input_pins[i]);
             pinMode(_input_pins[i], INPUT_PULLUP);
         }
     }
@@ -58,10 +50,6 @@ template <size_t num_rows, size_t num_cols> class SwitchMatrix {
     ~SwitchMatrix() {
         // Make sure all pins are set back to inputs.
         for (size_t i = 0; i < _num_outputs; i++) {
-            // gpio::init_pin(_output_pins[i], gpio::GpioMode::GPIO_INPUT_PULLUP);
-            // gpio_init(_output_pins[i]);
-            // gpio_set_dir(_output_pins[i], GPIO_IN);
-            // gpio_pull_up(_output_pins[i]);
             pinMode(_output_pins[i], INPUT_PULLUP);
         }
     }
@@ -69,29 +57,19 @@ template <size_t num_rows, size_t num_cols> class SwitchMatrix {
     void Scan(void (*keypress_cb)(uint8_t keycode, bool pressed)) {
         for (size_t i = 0; i < _num_outputs; i++) {
             // Activate the column/row.
-            // gpio::init_pin(_output_pins[i], gpio::GpioMode::GPIO_OUTPUT);
-            // gpio::write_digital(_output_pins[i], 0);
-            // gpio_init(_output_pins[i]);
-            // gpio_set_dir(_output_pins[i], GPIO_OUT);
-            // gpio_put(_output_pins[i], 0);
             pinMode(_output_pins[i], OUTPUT);
             digitalWrite(_output_pins[i], 0);
 
             // Read each cell in the column/row.
             for (size_t j = 0; j < _num_inputs; j++) {
                 uint8_t keycode =
-                    _direction == DiodeDirection::ROW2COL ? _matrix[j][i] : _matrix[i][j];
+                    _direction == DiodeDirection::ROW2COL ? _keymap[j][i] : _keymap[i][j];
                 if (keycode != HID_KEY_NONE) {
                     keypress_cb(keycode, !digitalRead(_input_pins[j]));
-                    // keypress_cb(keycode, !gpio_get(_input_pins[j]));
                 }
             }
 
             // Deactivate the column/row.
-            // gpio::init_pin(_output_pins[i], gpio::GpioMode::GPIO_INPUT_PULLUP);
-            // gpio_init(_output_pins[i]);
-            // gpio_set_dir(_output_pins[i], GPIO_IN);
-            // gpio_pull_up(_output_pins[i]);
             pinMode(_output_pins[i], INPUT_PULLUP);
         }
     }
@@ -101,7 +79,7 @@ template <size_t num_rows, size_t num_cols> class SwitchMatrix {
     size_t _num_inputs;
     uint *_output_pins;
     uint *_input_pins;
-    uint8_t (&_matrix)[num_rows][num_cols];
+    uint8_t (&_keymap)[num_rows][num_cols];
     DiodeDirection _direction;
 };
 
