@@ -72,6 +72,14 @@ void TUKeyboard::setPressed(uint8_t keycode, bool pressed) {
 }
 
 bool TUKeyboard::isPressed(uint8_t keycode) {
+    // If keycode >= E0 then it's a modifier key.
+    if (keycode >= 0xE0) {
+        // Create bitmask from the modifier keycode to check the corresponding bit in the modifier
+        // byte.
+        uint8_t bitmask = MODIFIER_MASK(keycode);
+        return _report.modifier & bitmask;
+    }
+
     for (int i = 0; i < 6; i++) {
         if (_report.keycode[i] == keycode) {
             return true;
