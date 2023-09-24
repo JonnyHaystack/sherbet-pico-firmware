@@ -38,7 +38,7 @@ jobs:
     - name: Publish ${{ matrix.env }} artifacts
       uses: actions/upload-artifact@v3
       with:
-        name: ${{ env.VERSION_REF }}-${{ matrix.env }}.${{ matrix.bin_ext }}
+        name: ${{ matrix.env }}-${{ env.VERSION_REF }}.${{ matrix.bin_ext }}
         path: ${{ matrix.env }}/${{ matrix.env }}-${{ env.VERSION_REF }}.${{ matrix.bin_ext }}
 
     - name: Upload binaries to release
