@@ -54,17 +54,6 @@ Directions joy2dirs(Coords coords) {
             result.up = true;
         }
     }
-    Serial.printf(
-        "magnitude: %d, angle: %d, coords.x: %d, coords.y: %d, left: %d, right: %d, down: %d, up: %d\n",
-        magnitude,
-        angle,
-        coords.x,
-        coords.y,
-        result.left,
-        result.right,
-        result.down,
-        result.up
-    );
     return result;
 }
 

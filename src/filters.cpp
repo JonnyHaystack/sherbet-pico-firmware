@@ -1,10 +1,6 @@
 #include "filters.hpp"
 
 Coords filter_coords(Coords coords) {
-    // return coords;
-    // return snap_angles(coords);
-    // return scale_up(coords, 1.8);
-    // return scale_up(snap_angles(coords), 1.8);
     return snap_angles(scale_up(coords, 1.8));
 }
 
@@ -40,14 +36,6 @@ Coords snap_angles(Coords coords) {
     // Calculate angle and magnitude.
     int angle = round(atan2(absolute_x, absolute_y) * (180.0 / M_PI));
     int magnitude = sqrt(sq(absolute_x) + sq(absolute_y));
-    // Serial.printf(
-    //     "X: %d, Y: %d, Angle: %d, Magnitude: %d, Y sign: %d\n",
-    //     absolute_x,
-    //     absolute_y,
-    //     angle,
-    //     magnitude,
-    //     y_sign
-    // );
     if (magnitude < 90) {
         return coords;
     }
