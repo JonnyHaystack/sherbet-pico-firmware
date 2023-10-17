@@ -11,19 +11,16 @@ enum class DiodeDirection {
     COL2ROW,
 };
 
-// TUKeyboard *_keyboard;
-
 template <size_t num_rows, size_t num_cols> class SwitchMatrix {
   public:
     SwitchMatrix(
-        uint row_pins[num_rows],
-        uint col_pins[num_cols],
-        uint8_t (&keymap)[num_rows][num_cols],
+        const uint row_pins[num_rows],
+        const uint col_pins[num_cols],
+        const uint8_t (&keymap)[num_rows][num_cols],
         DiodeDirection direction
     )
-        : _keymap(keymap) {
-        _direction = direction;
-
+        : _keymap(keymap),
+          _direction(direction) {
         if (_direction == DiodeDirection::ROW2COL) {
             _num_outputs = num_cols;
             _num_inputs = num_rows;
@@ -54,7 +51,7 @@ template <size_t num_rows, size_t num_cols> class SwitchMatrix {
         }
     }
 
-    void Scan(void (*keypress_cb)(uint8_t keycode, bool pressed)) {
+    virtual void Scan(void (*keypress_cb)(uint8_t keycode, bool pressed)) {
         for (size_t i = 0; i < _num_outputs; i++) {
             // Activate the column/row.
             pinMode(_output_pins[i], OUTPUT);
@@ -77,10 +74,10 @@ template <size_t num_rows, size_t num_cols> class SwitchMatrix {
   protected:
     size_t _num_outputs;
     size_t _num_inputs;
-    uint *_output_pins;
-    uint *_input_pins;
-    uint8_t (&_keymap)[num_rows][num_cols];
-    DiodeDirection _direction;
+    const uint *_output_pins;
+    const uint *_input_pins;
+    const uint8_t (&_keymap)[num_rows][num_cols];
+    const DiodeDirection _direction;
 };
 
 #endif
