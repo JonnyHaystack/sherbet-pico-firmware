@@ -14,7 +14,7 @@ typedef enum _JoystickMode {
 
 JoystickMode joystick_mode = JOYSTICK_ANALOG;
 
-TUGamepad *gamepad;
+TUGamepad gamepad;
 TUKeyboard keyboard;
 
 const size_t num_rows = 4;
@@ -47,6 +47,8 @@ int8_t y_offset = 0;
 volatile Coords coords;
 
 void setup() {
+    busy_wait_ms(100);
+
     keyboard.releaseAll();
 
     // Read button holds on plugin.
@@ -75,8 +77,7 @@ void setup() {
     TUKeyboard::registerDescriptor();
 
     if (joystick_mode == JOYSTICK_ANALOG) {
-        gamepad = new TUGamepad();
-        gamepad->begin();
+        gamepad.begin();
     }
     keyboard.begin();
 
@@ -100,44 +101,42 @@ void loop() {
     while (!TUCompositeHID::_usb_hid.ready()) {
         tight_loop_contents();
     }
-    if (joystick_mode == JOYSTICK_ARROW_KEYS) {
-        joy2key({ (int8_t)-coords.x, coords.y }, &keyboard);
-    }
     keyboard.sendState();
 
     /*
      * Joystick stuff
      */
     if (joystick_mode == JOYSTICK_ANALOG) {
-        while (!gamepad->ready()) {
+        while (!gamepad.ready()) {
             tight_loop_contents();
         }
-        // Read analog stick values.
-        uint8_t x = analogRead(X_PIN) + x_offset;
-        uint8_t y = analogRead(Y_PIN) + y_offset;
-
-        if (joystick_mode == JOYSTICK_ANALOG) {
-            // Convert analog values to signed integers and pass them through configured filters.
-            Coords filtered = filter_coords({ (int8_t)(x - 128), (int8_t)(y - 128) });
-            coords.x = filtered.x;
-            coords.y = filtered.y;
-        } else {
-            coords.x = (int8_t)(x - 128);
-            coords.y = (int8_t)(y - 128);
-        }
-
-        gamepad->leftXAxis(127 - coords.x);
-        gamepad->leftYAxis(127 - coords.y);
-        gamepad->sendState();
+        gamepad.leftXAxis(127 - coords.x);
+        gamepad.leftYAxis(127 - coords.y);
+        gamepad.sendState();
     }
 }
 
 void setup1() {
-    busy_wait_ms(5);
+    busy_wait_ms(300);
 }
 
 void loop1() {
     // Scan keyboard switch matrix and perform debouncing.
     matrix_input.Scan([](uint8_t keycode, bool pressed) { keyboard.setPressed(keycode, pressed); });
-    busy_wait_us(500);
+
+    // Read analog stick values.
+    uint8_t x = analogRead(X_PIN) + x_offset;
+    uint8_t y = analogRead(Y_PIN) + y_offset;
+
+    if (joystick_mode == JOYSTICK_ANALOG) {
+        // Convert analog values to signed integers and pass them through configured filters.
+        Coords filtered = filter_coords({ (int8_t)(x - 128), (int8_t)(y - 128) });
+        coords.x = filtered.x;
+        coords.y = filtered.y;
+    } else if (joystick_mode == JOYSTICK_ARROW_KEYS) {
+        // If in joystick arrow key mode, update keyboard inputs.
+        coords.x = (int8_t)(x - 128);
+        coords.y = (int8_t)(y - 128);
+        joy2key({ (int8_t)-coords.x, coords.y }, &keyboard);
+    }
 }
