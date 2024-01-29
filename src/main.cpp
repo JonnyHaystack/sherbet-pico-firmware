@@ -84,6 +84,7 @@ void setup() {
     analogReadResolution(8);
 
     // Calibrate stick centre values.
+    busy_wait_ms(300);
     x_offset = 128 - analogRead(X_PIN);
     y_offset = 128 - analogRead(Y_PIN);
 
